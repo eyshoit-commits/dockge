@@ -8,6 +8,10 @@ RUN apt-get update && apt-get install -y \
     unzip \
     dumb-init \
     jq \
+    nano \
+    openssh-client \
+    openssh-server \
+    nano \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Docker
@@ -15,14 +19,19 @@ RUN curl -fsSL https://get.docker.com -o get-docker.sh && \
     sh get-docker.sh && \
     rm get-docker.sh
 
+# Install docker-compose standalone
+RUN curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+    chmod +x /usr/local/bin/docker-compose
+
 # Install Node.js tools
 RUN npm install -g tsx
 
 # Create workspace directory
 WORKDIR /workspaces
 
-# Expose ports for Dockge
+# Expose full port range for complete forwarding
 EXPOSE 5000
+EXPOSE 1-65535
 
 # Start script
 COPY start.sh /usr/local/bin/start.sh
