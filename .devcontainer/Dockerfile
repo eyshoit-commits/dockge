@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     dumb-init \
     jq \
+    git \
     nano \
     openssh-client \
     openssh-server \
