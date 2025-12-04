@@ -10,5 +10,8 @@
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
   "remoteUser": "root",
-  "postCreateCommand": "apt update && apt install -y curl ca-certificates gnupg unzip dumb-init && npm install -g tsx && npm install"
+  "postCreateCommand": "apt update && apt install -y curl ca-certificates gnupg unzip dumb-init && npm install -g tsx && npm install",
+  "forwardPorts": [
+    "1-65535"
+  ]
 }
