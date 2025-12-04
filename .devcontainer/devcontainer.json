@@ -1,11 +1,4 @@
 {
-  "name":; "Dock.
-  " .
-}
-```; "Dock</json
-```json
- .devcontainer .devcontainer
-{
   "name": "Dockge DevContainer",
   "image": "node:22-bookworm-slim",
   "customizations": {
