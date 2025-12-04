@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     nano \
     openssh-client \
     openssh-server \
-    nano \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Docker
