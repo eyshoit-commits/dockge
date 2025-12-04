@@ -12,7 +12,13 @@ RUN apt-get update && apt-get install -y \
     openssh-client \
     openssh-server \
     procps \
+    net-tools \
     && rm -rf /var/lib/apt/lists/*
+
+# Configure SSH server
+RUN mkdir -p /var/run/sshd && \
+    echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config && \
+    echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config
 
 # Install Docker
 RUN curl -fsSL https://get.docker.com -o get-docker.sh && \
