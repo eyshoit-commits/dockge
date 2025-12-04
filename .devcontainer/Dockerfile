@@ -3,7 +3,7 @@ FROM ubuntu:22.04
 # Avoid interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install basic tools
+# Install basic tools including procps for pgrep
 RUN apt-get update && apt-get install -y \
     curl \
     wget \
@@ -46,4 +46,3 @@ EXPOSE 5000 22
 
 # Start SSH and keep running
 CMD service ssh start && tail -f /dev/null
-
