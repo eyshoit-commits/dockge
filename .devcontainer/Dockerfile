@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y \
     jq \
     git \
     nano \
-    openssh-client \
     openssh-server \
     procps \
     net-tools \
