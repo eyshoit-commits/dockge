@@ -21,9 +21,6 @@ RUN apt update && apt install --yes --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && npm install -g tsx
 
-# Create node user
-RUN useradd -m -s /bin/bash node
-
 # Set up working directory
 WORKDIR /app
 
