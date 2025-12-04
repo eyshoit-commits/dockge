@@ -1,17 +1,21 @@
 {
   "name": "Dockge DevContainer",
-  "image": "node:22-bookworm-slim",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "customizations": {
     "vscode": {
-      "extensions": ["ms-azuretools.vscode-docker"]
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "redhat.vscode-yaml",
+        "ms-vscode.vscode-json"
+      ]
     }
   },
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
+  "forwardPorts": [5000, "1-65535"],
   "remoteUser": "root",
-  "postCreateCommand": "apt update && apt install -y curl ca-certificates gnupg unzip dumb-init && npm install -g tsx && npm install",
-  "forwardPorts": [
-    "1-65535"
-  ]
+  "postCreateCommand": "npm install"
 }
