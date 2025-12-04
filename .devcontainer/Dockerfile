@@ -24,8 +24,8 @@ RUN apt update && apt install --yes --no-install-recommends \
 # Set up working directory
 WORKDIR /app
 
-# Copy package files first for better caching
-COPY package*.json ./
+# Copy package files explicitly
+COPY package.json package-lock.json ./
 RUN npm install
 
 # Copy the rest of the application
@@ -42,10 +42,6 @@ USER node
 
 # Expose port
 EXPOSE 5001
-
-# Set entrypoint to start Dockge
-ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["tsx", "./backend/index.ts"]
 
 # Set entrypoint to start Dockge
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
