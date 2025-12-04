@@ -1,13 +1,8 @@
 {
   "name": "Dockge DevContainer",
   "build": {
-    "dockerfile": "Dockerfile"
-  },
-  "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "version": "latest",
-      "dockerDashComposeVersion": "v2.21.0"
-    }
+    "dockerfile": "Dockerfile",
+    "target": "development"
   },
   "customizations": {
     "vscode": {
