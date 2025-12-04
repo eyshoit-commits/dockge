@@ -8,8 +8,6 @@ RUN apt-get update && apt-get install -y \
     unzip \
     dumb-init \
     jq \
-    docker.io \
-    docker-compose-plugin \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Docker
