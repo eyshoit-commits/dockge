@@ -1,7 +1,4 @@
-############################################
-# Base Stage - Install Docker and dependencies
-############################################
-FROM node:22-bookworm-slim AS base
+FROM node:22-bookworm-slim
 
 # Install system dependencies
 RUN apt update && apt install --yes --no-install-recommends \
@@ -27,21 +24,15 @@ RUN apt update && apt install --yes --no-install-recommends \
 # Create node user
 RUN useradd -m -s /bin/bash node
 
-############################################
-# Development Stage - Install local Dockge
-############################################
-FROM base AS development
-
 # Set up working directory
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY --chown=node:node ./package.json ./package.json
-COPY --chown=node:node ./package-lock.json ./package-lock.json
+# Copy package files first for better caching
+COPY package*.json ./
 RUN npm ci
 
-# Copy application code
-COPY --chown=node:node . .
+# Copy the rest of the application
+COPY . .
 
 # Create data directory
 RUN mkdir -p ./data && chown node:node ./data
