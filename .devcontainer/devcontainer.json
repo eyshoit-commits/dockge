@@ -1,8 +1,13 @@
 {
+  "name":; "Dock.
+  " .
+}
+```; "Dock</json
+```json
+ .devcontainer .devcontainer
+{
   "name": "Dockge DevContainer",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
+  "image": "node:22-bookworm-slim",
   "customizations": {
     "vscode": {
       "extensions": ["ms-azuretools.vscode-docker"]
@@ -11,6 +16,6 @@
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
-  "remoteUser": "node",
-  "postCreateCommand": "docker --version && docker compose version"
+  "remoteUser": "root",
+  "postCreateCommand": "apt update && apt install -y curl ca-certificates gnupg unzip dumb-init && npm install -g tsx && npm install"
 }
