@@ -1,19 +1,29 @@
 {
-  "name": "Node.js",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
-  "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
-  },
+  "name": "Dockge DevContainer",
+  "dockerFile": "Dockerfile",
+  "context": "..",
   "customizations": {
     "vscode": {
-      "extensions": ["ms-azuretools.vscode-docker"]
+      "extensions": ["ms-azuretools.vscode-docker", "dbaeumer.vscode-eslint"]
     }
   },
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
   "remoteUser": "node",
-  "postCreateCommand": "docker --version && docker compose version"
+  "workspaceFolder": "/app",
+  "remoteEnv": {
+    "NODE_ENV": "development"
+  },
+  "forwardPorts": [5001, 22],
+  "portsAttributes": {
+    "5001": {
+      "label": "Dockge",
+      "onAutoForward": "notify"
+    },
+    "22": {
+      "label": "SSH",
+      "onAutoForward": "silent"
+    }
+  }
 }
