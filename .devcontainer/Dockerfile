@@ -1,48 +1,71 @@
-FROM ubuntu:22.04
+FROM node:22-bookworm-slim
 
-# Avoid interactive prompts
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install basic tools including procps for pgrep
-RUN apt-get update && apt-get install -y \
+# Install system dependencies including Docker CLI and OpenSSH
+RUN apt-get update && apt-get install --yes --no-install-recommends \
     curl \
-    wget \
+    ca-certificates \
+    gnupg \
+    unzip \
+    dumb-init \
     git \
-    nano \
-    vim \
-    jq \
-    openssh-client \
     openssh-server \
-    procps \
-    net-tools \
-    sudo \
+    openssh-client \
+    && install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
+    && chmod a+r /etc/apt/keyrings/docker.gpg \
+    && echo \
+         "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+         "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+         tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    && apt-get update \
+    && apt-get install --yes --no-install-recommends \
+         docker-ce-cli \
+         docker-compose-plugin \
     && rm -rf /var/lib/apt/lists/*
 
-# Configure SSH
-RUN mkdir -p /var/run/sshd && \
-    echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config && \
-    echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config && \
-    sed -i 's/#PermitEmptyPasswords no/PermitEmptyPasswords yes/' /etc/ssh/sshd_config
+# Install global Node tools
+RUN npm install -g tsx
 
-# Install Docker
-RUN curl -fsSL https://get.docker.com -o get-docker.sh && \
-    sh get-docker.sh && \
-    rm get-docker.sh
+# Set up working directory
+WORKDIR /app
 
-# Install Node.js
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs && \
-    npm install -g tsx
+# Copy package files
+COPY package.json package-lock.json ./
 
-# Install docker-compose
-RUN curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
-    chmod +x /usr/local/bin/docker-compose
+# Install dependencies
+RUN npm ci
 
-# Create workspace
-WORKDIR /workspace
+# Copy the rest of the application
+COPY . .
+
+# Create data directory
+RUN mkdir -p ./data && chown node:node ./data
+
+# Set up SSH for node user
+RUN mkdir -p /home/node/.ssh && chmod 700 /home/node/.ssh
+
+# Add authorized keys for SSH access if available
+COPY .devcontainer/authorized_keys* /home/node/.ssh/
+RUN if [ -f /home/node/.ssh/authorized_keys ]; then \
+      chmod 600 /home/node/.ssh/authorized_keys && \
+      chown -R node:node /home/node/.ssh; \
+    fi
+
+# Ensure node user can access /app
+RUN chown -R node:node /app
+
+# Configure SSH server
+RUN mkdir -p /run/sshd && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+
+# Set environment variables
+ENV UV_USE_IO_URING=0
+ENV NODE_ENV=development
 
 # Expose ports
-EXPOSE 5000 22
+EXPOSE 5001 22
 
-# Start SSH and keep running
-CMD service ssh start && tail -f /dev/null
+# Start SSH server and keep container running
+CMD ["/usr/sbin/sshd", "-D"]
