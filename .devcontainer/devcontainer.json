@@ -1,20 +1,19 @@
 {
-  "name": "Dockge Workspace",
+  "name": "Node.js",
   "build": {
     "dockerfile": "Dockerfile"
   },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
   "customizations": {
     "vscode": {
-      "extensions": [
-        "ms-azuretools.vscode-docker",
-        "redhat.vscode-yaml",
-        "ms-vscode.vscode-json"
-      ]
+      "extensions": ["ms-azuretools.vscode-docker"]
     }
   },
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
-  "forwardPorts": [5000, 22, "1-65535"],
-  "remoteUser": "root"
+  "remoteUser": "node",
+  "postCreateCommand": "docker --version && docker compose version"
 }
