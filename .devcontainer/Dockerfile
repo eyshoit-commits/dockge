@@ -8,6 +8,8 @@ RUN apt-get update && apt-get install -y \
     unzip \
     dumb-init \
     jq \
+    pgrep \
+    openssh-server \
     docker.io \
     docker-compose-plugin \
     && rm -rf /var/lib/apt/lists/*
