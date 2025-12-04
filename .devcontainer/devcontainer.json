@@ -1,8 +1,7 @@
 {
   "name": "Dockge DevContainer",
   "build": {
-    "dockerfile": "Dockerfile",
-    "target": "development"
+    "dockerfile": "Dockerfile"
   },
   "customizations": {
     "vscode": {
