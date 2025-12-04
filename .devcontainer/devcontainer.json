@@ -5,17 +5,12 @@
   },
   "customizations": {
     "vscode": {
-      "extensions": [
-        "ms-azuretools.vscode-docker",
-        "redhat.vscode-yaml",
-        "ms-vscode.vscode-json"
-      ]
+      "extensions": ["ms-azuretools.vscode-docker"]
     }
   },
   "mounts": [
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
   ],
-  "forwardPorts": [5000, "1-65535"],
-  "remoteUser": "root",
-  "postCreateCommand": "npm install"
+  "remoteUser": "node",
+  "postCreateCommand": "docker --version && docker compose version"
 }
