@@ -1,12 +1,6 @@
 #!/bin/bash
 set -e
 
-# Start Docker daemon if not running
-if ! docker info >/dev/null 2>&1; then
-    dockerd-entrypoint.sh &
-    sleep 5
-fi
-
 # Create directories for Dockge
 mkdir -p /opt/stacks
 mkdir -p /workspaces/dockge-data
