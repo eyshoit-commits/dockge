@@ -1,52 +1,49 @@
-FROM node:22-bookworm-slim
+FROM ubuntu:22.04
 
-# Install system dependencies
-RUN apt update && apt install --yes --no-install-recommends \
+# Avoid interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install basic tools
+RUN apt-get update && apt-get install -y \
     curl \
-    ca-certificates \
-    gnupg \
-    unzip \
-    dumb-init \
-    && install -m 0755 -d /etc/apt/keyrings \
-    && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
-    && chmod a+r /etc/apt/keyrings/docker.gpg \
-    && echo \
-         "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-         "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-         tee /etc/apt/sources.list.d/docker.list > /dev/null \
-    && apt update \
-    && apt --yes --no-install-recommends install \
-         docker-ce-cli \
-         docker-compose-plugin \
-    && rm -rf /var/lib/apt/lists/* \
-    && npm install -g tsx
+    wget \
+    git \
+    nano \
+    vim \
+    jq \
+    openssh-client \
+    openssh-server \
+    procps \
+    net-tools \
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
 
-# Create node user
-RUN useradd -m -s /bin/bash node
+# Configure SSH
+RUN mkdir -p /var/run/sshd && \
+    echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config && \
+    echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config && \
+    sed -i 's/#PermitEmptyPasswords no/PermitEmptyPasswords yes/' /etc/ssh/sshd_config
 
-# Set up working directory
-WORKDIR /app
+# Install Docker
+RUN curl -fsSL https://get.docker.com -o get-docker.sh && \
+    sh get-docker.sh && \
+    rm get-docker.sh
 
-# Copy package files first for better caching
-COPY package*.json ./
-RUN npm ci
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g tsx
 
-# Copy the rest of the application
-COPY . .
+# Install docker-compose
+RUN curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+    chmod +x /usr/local/bin/docker-compose
 
-# Create data directory
-RUN mkdir -p ./data && chown node:node ./data
+# Create workspace
+WORKDIR /workspace
 
-# Set environment variables
-ENV UV_USE_IO_URING=0
+# Expose ports
+EXPOSE 5000 22
 
-# Switch to node user
-USER node
-
-# Expose port
-EXPOSE 5001
-
-# Set entrypoint to start Dockge
-ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["tsx", "./backend/index.ts"]
+# Start SSH and keep running
+CMD service ssh start && tail -f /dev/null
 
