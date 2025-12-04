@@ -1,46 +1,48 @@
 FROM node:22-bookworm-slim
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt update && apt install --yes --no-install-recommends \
     curl \
     ca-certificates \
     gnupg \
     unzip \
     dumb-init \
-    jq \
-    git \
-    nano \
-    openssh-server \
-    procps \
-    net-tools \
-    && rm -rf /var/lib/apt/lists/*
+    && install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
+    && chmod a+r /etc/apt/keyrings/docker.gpg \
+    && echo \
+         "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+         "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+         tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    && apt update \
+    && apt --yes --no-install-recommends install \
+         docker-ce-cli \
+         docker-compose-plugin \
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install -g tsx
 
-# Configure SSH server
-RUN mkdir -p /var/run/sshd && \
-    echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config && \
-    echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config
+# Set up working directory
+WORKDIR /app
 
-# Install Docker
-RUN curl -fsSL https://get.docker.com -o get-docker.sh && \
-    sh get-docker.sh && \
-    rm get-docker.sh
+# Copy package files explicitly
+COPY package.json package-lock.json ./
+RUN npm install
 
-# Install docker-compose standalone
-RUN curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
-    chmod +x /usr/local/bin/docker-compose
+# Copy the rest of the application
+COPY . .
 
-# Install Node.js tools
-RUN npm install -g tsx
+# Create data directory
+RUN mkdir -p ./data && chown node:node ./data
 
-# Create workspace directory
-WORKDIR /workspaces
+# Set environment variables
+ENV UV_USE_IO_URING=0
 
-# Expose full port range for complete forwarding
-EXPOSE 5000
-EXPOSE 1-65535
+# Switch to node user
+USER node
 
-# Start script
-COPY start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
+# Expose port
+EXPOSE 5001
 
-CMD ["/usr/local/bin/start.sh"]
+# Set entrypoint to start Dockge
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["tsx", "./backend/index.ts"]
