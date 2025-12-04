@@ -26,7 +26,7 @@ WORKDIR /app
 
 # Copy package files first for better caching
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 # Copy the rest of the application
 COPY . .
@@ -42,6 +42,10 @@ USER node
 
 # Expose port
 EXPOSE 5001
+
+# Set entrypoint to start Dockge
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["tsx", "./backend/index.ts"]
 
 # Set entrypoint to start Dockge
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
