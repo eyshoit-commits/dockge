@@ -1,7 +1,7 @@
 {
   "name": "Dockge DevContainer",
   "build": {
-    "dockerfile": ".devcontainer/Dockerfile",
+    "dockerfile": "docker/Dockerfile",
     "target": "development"
   },
   "customizations": {
@@ -15,3 +15,4 @@
   "remoteUser": "node",
   "postCreateCommand": "docker --version && docker compose version"
 }
+
