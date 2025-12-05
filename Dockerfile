@@ -108,8 +108,8 @@ RUN echo "Starting fresh build..." && \
     rm -rf /tmp/dockge
 COPY --chown=node:node --from=build_healthcheck /app/extra/healthcheck /app/extra/healthcheck
 COPY --from=build /app/node_modules /app/node_modules
-# Build frontend
-RUN cd /app/frontend && npx vite build
+# Build frontend - fixed
+RUN cd /app/frontend && npx vite build --emptyOutDir
 
 # Set up directories for Dockge runtime
 RUN mkdir -p /opt/stacks /opt/dockge && \
