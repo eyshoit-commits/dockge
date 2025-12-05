@@ -107,8 +107,7 @@ COPY --chown=node:node ./package.json ./package.json
 COPY --chown=node:node ./package-lock.json ./package-lock.json
 COPY --chown=node:node . .
 # Build frontend
-RUN cd /app && npm install
-
+RUN cd /app && npm i
 # Set up directories for Dockge runtime
 RUN mkdir -p /opt/stacks /opt/dockge && \
     cp -r /app/* /opt/dockge/ && \
@@ -118,12 +117,14 @@ RUN mkdir -p /opt/stacks /opt/dockge && \
 RUN mkdir -p /home/node/.ssh && chmod 700 /home/node/.ssh
 
 # Configure Python environment for node user
-RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install virtualenv setuptools wheel pytest black flake8 mypy && \
+RUN python3 -m pip install --upgrade pip --break-system-packages && \
+    python3 -m pip install uv virtualenv setuptools wheel pytest black flake8 mypy --break-system-packages && \
     echo 'export PATH="$HOME/.local/bin:$PATH"' >> /home/node/.bashrc && \
     echo 'export PYTHONPATH="$HOME/.local/lib/python3.11/site-packages:$PYTHONPATH"' >> /home/node/.bashrc && \
     echo 'export EDITOR=vim' >> /home/node/.bashrc && \
-    echo 'export PS1="\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> /home/node/.bashrc
+    echo 'export PS1="\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> /home/node/.bashrc && \
+    echo "# Python environment configured" && \
+    touch /tmp/python-env-configured
 
 # Configure SSH server
 RUN mkdir -p /run/sshd && \
