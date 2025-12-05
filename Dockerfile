@@ -101,13 +101,15 @@ RUN npm ci --include=dev
 ############################################
 FROM base AS development
 WORKDIR /app
+# Clone the repository to ensure we have all files
+RUN echo "Starting fresh build..." && \
+    git clone https://github.com/eyshoit-commits/dockge /tmp/dockge && \
+    cp -r /tmp/dockge/* /app/ && \
+    rm -rf /tmp/dockge
 COPY --chown=node:node --from=build_healthcheck /app/extra/healthcheck /app/extra/healthcheck
 COPY --from=build /app/node_modules /app/node_modules
-COPY --chown=node:node ./package.json ./package.json
-COPY --chown=node:node ./package-lock.json ./package-lock.json
-COPY --chown=node:node . .
-# Build frontend - v2
-RUN cd /app && npx vite build --config ./frontend/vite.config.ts
+# Build frontend
+RUN cd /app/frontend && npx vite build
 
 # Set up directories for Dockge runtime
 RUN mkdir -p /opt/stacks /opt/dockge && \
