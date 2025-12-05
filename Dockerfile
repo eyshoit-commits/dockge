@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     git \
     openssh-server \
     openssh-client \
+    golang \
     && install -m 0755 -d /etc/apt/keyrings \
     && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
     && chmod a+r /etc/apt/keyrings/docker.gpg \
@@ -34,7 +35,8 @@ RUN useradd -m -s /bin/bash node || true
 ############################################
 FROM base AS build_healthcheck
 WORKDIR /app
-COPY --chown=node:node ./extra/healthcheck ./extra/healthcheck
+COPY --chown=node:node ./extra/healthcheck.go ./extra/healthcheck.go
+RUN go build -o ./extra/healthcheck ./extra/healthcheck.go
 
 ############################################
 # Build Stage - Install dependencies
