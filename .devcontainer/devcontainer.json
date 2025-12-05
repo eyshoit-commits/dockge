@@ -1,7 +1,7 @@
 {
   "name": "Dockge DevContainer",
   "build": {
-    "dockerfile": "../Docker/Dockerfile",
+    "dockerfile": "docker/Dockerfile",
     "context": "..",
     "target": "development"
   },
