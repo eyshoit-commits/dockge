@@ -70,7 +70,7 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
          docker-compose-plugin \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g tsx yarn pnpm typescript nodemon @types/node eslint prettier
+RUN npm install -g --force tsx yarn pnpm typescript nodemon @types/node eslint prettier
 
 RUN useradd -m -s /bin/bash node || true && \
     echo "node ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
@@ -161,4 +161,3 @@ EXPOSE 5001 22
 HEALTHCHECK --interval=60s --timeout=30s --start-period=60s --retries=5 CMD extra/healthcheck
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["/bin/bash", "-c", "/usr/sbin/sshd -D & /opt/dockge/start-dockge.sh"]
-
