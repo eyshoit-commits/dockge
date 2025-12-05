@@ -1,6 +1,6 @@
 {
   "name": "Dockge DevContainer",
-  "dockerFile": "Dockerfile",
+  "dockerFile": ".devcontainer/Dockerfile",
   "context": "..",
   "customizations": {
     "vscode": {
