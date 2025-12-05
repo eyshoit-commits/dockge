@@ -94,7 +94,7 @@ FROM base AS build
 WORKDIR /app
 COPY --chown=node:node ./package.json ./package.json
 COPY --chown=node:node ./package-lock.json ./package-lock.json
-RUN npm ci
+RUN npm ci --include=dev
 
 ############################################
 # Development Stage
