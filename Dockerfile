@@ -107,7 +107,7 @@ COPY --chown=node:node ./package.json ./package.json
 COPY --chown=node:node ./package-lock.json ./package-lock.json
 COPY --chown=node:node . .
 # Build frontend
-RUN cd /app && npm run build:frontend
+RUN cd /app && npm run build
 # Set up directories for Dockge runtime
 RUN mkdir -p /opt/stacks /opt/dockge && \
     cp -r /app/* /opt/dockge/ && \
