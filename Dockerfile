@@ -106,12 +106,13 @@ COPY --from=build /app/node_modules /app/node_modules
 COPY --chown=node:node ./package.json ./package.json
 COPY --chown=node:node ./package-lock.json ./package-lock.json
 COPY --chown=node:node . .
-# Set up directories and build Dockge from source
+# Build frontend
+RUN npm run build:frontend
+
+# Set up directories for Dockge runtime
 RUN mkdir -p /opt/stacks /opt/dockge && \
-    cd /opt/dockge && \
-    cp -r /app/* . && \
-    npm install && \
-    npm run build:frontend
+    cp -r /app/* /opt/dockge/ && \
+    mkdir -p /opt/dockge/data
 
 # Set up SSH for node user
 RUN mkdir -p /home/node/.ssh && chmod 700 /home/node/.ssh
