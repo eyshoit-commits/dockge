@@ -13,6 +13,50 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
     openssh-server \
     openssh-client \
     golang \
+    python3 \
+    python3-pip \
+    python3-venv \
+    build-essential \
+    gcc \
+    g++ \
+    make \
+    cmake \
+    pkg-config \
+    libssl-dev \
+    libffi-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libwebp-dev \
+    zlib1g-dev \
+    wget \
+    vim \
+    nano \
+    htop \
+    tree \
+    jq \
+    yq \
+    sudo \
+    net-tools \
+    iputils-ping \
+    telnet \
+    ncurses-dev \
+    libncurses5-dev \
+    libreadline-dev \
+    bison \
+    flex \
+    gdb \
+    strace \
+    ltrace \
+    valgrind \
+    zip \
+    unzip \
+    tar \
+    gzip \
+    p7zip \
+    rsync \
+    lsof \
+    procps \
+    psmisc \
     && install -m 0755 -d /etc/apt/keyrings \
     && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
     && chmod a+r /etc/apt/keyrings/docker.gpg \
@@ -26,9 +70,14 @@ RUN apt-get update && apt-get install --yes --no-install-recommends \
          docker-compose-plugin \
     && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g tsx
+RUN npm install -g tsx yarn pnpm typescript nodemon @types/node eslint prettier
 
-RUN useradd -m -s /bin/bash node || true
+RUN useradd -m -s /bin/bash node || true && \
+    echo "node ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    mkdir -p /home/node/.local/bin && \
+    mkdir -p /home/node/projects && \
+    mkdir -p /home/node/.config && \
+    chown -R node:node /home/node
 
 ############################################
 # Healthcheck Binary
@@ -57,10 +106,23 @@ COPY --from=build /app/node_modules /app/node_modules
 COPY --chown=node:node ./package.json ./package.json
 COPY --chown=node:node ./package-lock.json ./package-lock.json
 COPY --chown=node:node . .
-RUN mkdir ./data
+# Set up directories and build Dockge from source
+RUN mkdir -p /opt/stacks /opt/dockge && \
+    cd /opt/dockge && \
+    cp -r /app/* . && \
+    npm install && \
+    npm run build
 
 # Set up SSH for node user
 RUN mkdir -p /home/node/.ssh && chmod 700 /home/node/.ssh
+
+# Configure Python environment for node user
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install virtualenv setuptools wheel pytest black flake8 mypy && \
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> /home/node/.bashrc && \
+    echo 'export PYTHONPATH="$HOME/.local/lib/python3.11/site-packages:$PYTHONPATH"' >> /home/node/.bashrc && \
+    echo 'export EDITOR=vim' >> /home/node/.bashrc && \
+    echo 'export PS1="\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> /home/node/.bashrc
 
 # Configure SSH server
 RUN mkdir -p /run/sshd && \
@@ -68,15 +130,35 @@ RUN mkdir -p /run/sshd && \
     sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config && \
     sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
 
+# Create startup script for Dockge
+RUN echo '#!/bin/bash' > /opt/dockge/start-dockge.sh && \
+    echo 'cd /opt/dockge' >> /opt/dockge/start-dockge.sh && \
+    echo 'mkdir -p /opt/stacks' >> /opt/dockge/start-dockge.sh && \
+    echo 'mkdir -p /opt/dockge/data' >> /opt/dockge/start-dockge.sh && \
+    echo 'npm start' >> /opt/dockge/start-dockge.sh && \
+    chmod +x /opt/dockge/start-dockge.sh && \
+    chown -R node:node /opt/dockge /opt/stacks
+
 # It is just for safe, as by default, it is disabled in the latest Node.js now.
 # Read more:
 # - https://github.com/sagemathinc/cocalc/issues/6963
 # - https://github.com/microsoft/node-pty/issues/630#issuecomment-1987212447
 ENV UV_USE_IO_URING=0
 ENV NODE_ENV=development
+ENV PYTHONPATH=/app
+ENV PATH=/home/node/.local/bin:$PATH
+ENV PYTHON_VERSION=3.11
+ENV GO_VERSION=1.21
+ENV EDITOR=vim
+ENV TERM=xterm-256color
 
 VOLUME /app/data
+VOLUME /home/node/.ssh
+VOLUME /home/node/projects
+VOLUME /opt/stacks
+VOLUME /opt/dockge/data
 EXPOSE 5001 22
 HEALTHCHECK --interval=60s --timeout=30s --start-period=60s --retries=5 CMD extra/healthcheck
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["/usr/sbin/sshd", "-D"]
+CMD ["/bin/bash", "-c", "/usr/sbin/sshd -D & /opt/dockge/start-dockge.sh"]
+
