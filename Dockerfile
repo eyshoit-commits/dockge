@@ -111,7 +111,7 @@ RUN mkdir -p /opt/stacks /opt/dockge && \
     cd /opt/dockge && \
     cp -r /app/* . && \
     npm install && \
-    npm run build
+    npm run build:frontend
 
 # Set up SSH for node user
 RUN mkdir -p /home/node/.ssh && chmod 700 /home/node/.ssh
